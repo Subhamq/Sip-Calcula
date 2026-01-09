@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceCalc v2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+tailwind.config = {
+  darkMode: 'class'
+}
+</script>
+
+<style>
+input[type=range] {
+  accent-color: #00d09c;
+}
+</style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+<!-- HEADER -->
+<header class="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center">
+  <h1 class="text-xl font-bold">
+    Finance<span class="text-[#00d09c]">Calc</span>
+  </h1>
+  <button onclick="toggleDark()" class="px-4 py-2 rounded bg-[#00d09c] text-white">
+    🌙 Dark Mode
+  </button>
+</header>
+
+<!-- MAIN -->
+<main class="max-w-7xl mx-auto p-4">
+
+<!-- BOTTOM 3 COLUMN SECTION -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+
+<!-- COLUMN 1: BASIC + SCIENTIFIC CALCULATOR -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+<h2 class="text-lg font-bold mb-3">Basic / Scientific Calculator</h2>
+
+<input id="calc-display" class="w-full p-3 mb-3 text-right text-xl rounded bg-gray-100 dark:bg-gray-700" readonly>
+
+<div class="grid grid-cols-4 gap-2">
+<button onclick="add('7')" class="btn">7</button>
+<button onclick="add('8')" class="btn">8</button>
+<button onclick="add('9')" class="btn">9</button>
+<button onclick="add('/')" class="btn">÷</button>
+
+<button onclick="add('4')" class="btn">4</button>
+<button onclick="add('5')" class="btn">5</button>
+<button onclick="add('6')" class="btn">6</button>
+<button onclick="add('*')" class="btn">×</button>
+
+<button onclick="add('1')" class="btn">1</button>
+<button onclick="add('2')" class="btn">2</button>
+<button onclick="add('3')" class="btn">3</button>
+<button onclick="add('-')" class="btn">−</button>
+
+<button onclick="add('0')" class="btn">0</button>
+<button onclick="add('.')" class="btn">.</button>
+<button onclick="calculate()" class="btn bg-green-500 text-white">=</button>
+<button onclick="add('+')" class="btn">+</button>
+
+<button onclick="add('Math.sin(')" class="btn col-span-2">sin</button>
+<button onclick="add('Math.cos(')" class="btn col-span-2">cos</button>
+<button onclick="clearCalc()" class="btn col-span-4 bg-red-500 text-white">Clear</button>
+</div>
+</div>
+
+<!-- COLUMN 2: SIP CALCULATOR -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+<h2 class="text-lg font-bold mb-3">SIP Calculator</h2>
+
+<label>Monthly SIP (₹)</label>
+<input type="number" id="sip-amt" value="10000" class="w-full p-2 rounded">
+<input type="range" min="500" max="100000" step="500" value="10000"
+oninput="sync('sip-amt',this.value)">
+
+<label>Return %</label>
+<input type="number" id="sip-rate" value="12" class="w-full p-2 rounded">
+<input type="range" min="1" max="30" step="0.5" value="12"
+oninput="sync('sip-rate',this.value)">
+
+<label>Years</label>
+<input type="number" id="sip-years" value="10" class="w-full p-2 rounded">
+<input type="range" min="1" max="40" step="1" value="10"
+oninput="sync('sip-years',this.value)">
+
+<label>Step-Up %</label>
+<input type="number" id="sip-step" value="10" class="w-full p-2 rounded">
+<input type="range" min="0" max="30" step="1" value="10"
+oninput="sync('sip-step',this.value)">
+
+<button onclick="calcSIP()" class="mt-3 w-full bg-[#00d09c] text-white p-2 rounded">Calculate</button>
+
+<p class="mt-3">Invested: <span id="sip-invested"></span></p>
+<p>Returns: <span id="sip-returns"></span></p>
+<p class="font-bold">Total: <span id="sip-total"></span></p>
+</div>
+
+<!-- COLUMN 3: STOCK CALCULATOR -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+<h2 class="text-lg font-bold mb-3">Stock Calculator</h2>
+
+<label>Buy Price</label>
+<input type="number" id="buy" value="1000" class="w-full p-2 rounded">
+<input type="range" min="1" max="10000" value="1000"
+oninput="sync('buy',this.value)">
+
+<label>Quantity</label>
+<input type="number" id="qty" value="10" class="w-full p-2 rounded">
+<input type="range" min="1" max="1000" value="10"
+oninput="sync('qty',this.value)">
+
+<label>Current Price</label>
+<input type="number" id="current" value="1200" class="w-full p-2 rounded">
+<input type="range" min="1" max="10000" value="1200"
+oninput="sync('current',this.value)">
+
+<button onclick="calcStock()" class="mt-3 w-full bg-[#00d09c] text-white p-2 rounded">Calculate</button>
+
+<p class="mt-3">Invested: <span id="stk-invested"></span></p>
+<p>Value: <span id="stk-value"></span></p>
+<p class="font-bold">Profit/Loss: <span id="stk-profit"></span></p>
+</div>
+
+</div>
+</main>
+
+<!-- JS -->
+<script>
+function sync(id,val){ document.getElementById(id).value = val }
+
+function toggleDark(){
+  document.documentElement.classList.toggle('dark')
+  localStorage.theme = document.documentElement.classList.contains('dark')?'dark':'light'
+}
+if(localStorage.theme==='dark'){ document.documentElement.classList.add('dark') }
+
+let exp=""
+function add(v){ exp+=v; document.getElementById("calc-display").value=exp }
+function clearCalc(){ exp=""; document.getElementById("calc-display").value="" }
+function calculate(){ exp=eval(exp).toString(); document.getElementById("calc-display").value=exp }
+
+function calcSIP(){
+let P=+sip-amt.value, r=+sip-rate.value/100/12, y=+sip-years.value, s=+sip-step.value/100
+let total=0, invested=0
+for(let yr=1;yr<=y;yr++){
+ for(let m=1;m<=12;m++){
+  invested+=P
+  total=(total+P)*(1+r)
+ }
+ P+=P*s
+}
+sip-invested.innerText="₹"+Math.round(invested).toLocaleString()
+sip-total.innerText="₹"+Math.round(total).toLocaleString()
+sip-returns.innerText="₹"+Math.round(total-invested).toLocaleString()
+}
+
+function calcStock(){
+let i=buy.value*qty.value
+let v=current.value*qty.value
+stk-invested.innerText="₹"+i
+stk-value.innerText="₹"+v
+stk-profit.innerText="₹"+(v-i)
+}
+</script>
+
+</body>
+</html>
